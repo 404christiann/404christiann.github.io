@@ -23,7 +23,7 @@ export const projects: Project[] = [
   },
   {
     title: 'Project Three',
-    description: 'A third project — swap these out with your real work.',
+    description: 'A third project, swap these out with your real work.',
     tech: ['Python', 'FastAPI', 'Docker'],
     github: 'https://github.com/404christiann',
     live: 'https://example.com',

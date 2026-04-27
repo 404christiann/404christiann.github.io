@@ -1,17 +1,13 @@
-import NavBar from '@/components/ui/NavBar'
-import Hero from '@/components/sections/Hero'
-import About from '@/components/sections/About'
-import Projects from '@/components/sections/Projects'
-import Contact from '@/components/sections/Contact'
+'use client'
+
+// src/app/page.tsx
+// Replaces the old scroll-layout home page with the blob navigation system.
+// BlobNav uses vanilla Three.js (window/WebGL), so it must be SSR-disabled.
+
+import dynamic from 'next/dynamic'
+
+const BlobNav = dynamic(() => import('@/components/BlobNav'), { ssr: false })
 
 export default function Home() {
-  return (
-    <main className="bg-white">
-      <NavBar />
-      <Hero />
-      <About />
-      <Projects />
-      <Contact />
-    </main>
-  )
+  return <BlobNav />
 }

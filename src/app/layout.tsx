@@ -4,8 +4,8 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Christian — Portfolio",
-  description: "Personal portfolio of Christian — full-stack developer.",
+  title: "Christian Alcala | Portfolio",
+  description: "Personal portfolio of Christian Alcala, full-stack developer.",
 };
 
 export default function RootLayout({

@@ -33,7 +33,7 @@ export default function Contact() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mt-20 pt-8 border-t border-gray-200 text-gray-400 text-sm"
         >
-          Designed &amp; built by Christian — {new Date().getFullYear()}
+          Designed &amp; built by Christian, {new Date().getFullYear()}
         </motion.div>
       </div>
     </section>
