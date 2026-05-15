@@ -652,14 +652,17 @@ export default function BlobNav() {
             pointerEvents: visible ? 'auto' : 'none',
           }}
         >
-          {/* Close button — fixed so it stays visible regardless of scroll position */}
-          <button
-            onClick={closeSection}
-            className="fixed top-6 right-6 z-[60] w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors bg-white/70 backdrop-blur border-none cursor-pointer text-xl leading-none shadow"
-            aria-label="Close"
-          >
-            ✕
-          </button>
+          {/* Close button — colors driven by the active blob's palette */}
+          {(() => {
+            const def = BLOB_DEFS.find(d => d.id === active)
+            return (
+              <PortalCloseButton
+                onClose={closeSection}
+                colorA={def?.c1 ?? '#e8105a'}
+                colorB={def?.c3 ?? '#8810f0'}
+              />
+            )
+          })()}
 
           {/* Contact */}
           {active === 'contact' && (
@@ -688,6 +691,112 @@ export default function BlobNav() {
         </div>
       )}
     </div>
+  )
+}
+
+// ─── Portal close button ──────────────────────────────────────────────────────
+
+function PortalCloseButton({ onClose, colorA, colorB }: {
+  onClose: () => void
+  colorA:  string
+  colorB:  string
+}) {
+  const [ringKey,  setRingKey]  = useState(0)
+  const [ringing,  setRinging]  = useState(false)
+  const [rippling, setRippling] = useState(false)
+  const [pressed,  setPressed]  = useState(false)
+
+  const gradient = `linear-gradient(135deg, ${colorA} 0%, ${colorB} 100%)`
+
+  const trigger = () => {
+    if (rippling) return
+    setRippling(true)
+    setTimeout(() => {
+      onClose()
+      setRippling(false)
+    }, 340)
+  }
+
+  const handleMouseEnter = () => {
+    setRinging(true)
+    setRingKey(k => k + 1)
+  }
+  const handleMouseLeave = () => setRinging(false)
+
+  return (
+    <button
+      onClick={trigger}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+      onTouchStart={() => setPressed(true)}
+      onTouchEnd={() => setPressed(false)}
+      aria-label="Close"
+      style={{
+        position:   'fixed',
+        top:        '1.5rem',
+        right:      '1.5rem',
+        zIndex:     60,
+        width:      44,
+        height:     44,
+        background: 'none',
+        border:     'none',
+        padding:    0,
+        cursor:     'pointer',
+        WebkitTapHighlightColor: 'transparent',
+      }}
+    >
+      {/* Expanding ring on hover */}
+      {ringing && (
+        <span
+          key={ringKey}
+          style={{
+            position:      'absolute',
+            inset:         0,
+            borderRadius:  '50%',
+            border:        `1.5px solid ${colorA}`,
+            animation:     'portal-ring-out 0.5s ease-out forwards',
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+
+      {/* Radial ripple on click/tap */}
+      {rippling && (
+        <span
+          style={{
+            position:        'absolute',
+            inset:           0,
+            borderRadius:    '50%',
+            background:      gradient,
+            animation:       'portal-ripple-out 0.5s cubic-bezier(0.2,0,0.6,1) forwards',
+            pointerEvents:   'none',
+            transformOrigin: 'center',
+          }}
+        />
+      )}
+
+      {/* Gradient circle */}
+      <span
+        style={{
+          position:       'absolute',
+          inset:          0,
+          borderRadius:   '50%',
+          background:     gradient,
+          display:        'flex',
+          alignItems:     'center',
+          justifyContent: 'center',
+          transform:      pressed ? 'scale(0.88)' : 'scale(1)',
+          transition:     'transform 0.2s cubic-bezier(0.34,1.56,0.64,1)',
+        }}
+      >
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <line x1="1" y1="1" x2="13" y2="13" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+          <line x1="13" y1="1" x2="1"  y2="13" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+      </span>
+    </button>
   )
 }
 
@@ -725,117 +834,124 @@ const PROJECTS = [
 
 function ProjectsSection() {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
-  const [mouse, setMouse]           = useState({ x: 0, y: 0 })
-  const containerRef                = useRef<HTMLDivElement>(null)
-
-  const onMouseMove = useCallback((e: React.MouseEvent) => {
-    setMouse({ x: e.clientX, y: e.clientY })
-  }, [])
-
   const anyHovered = hoveredIdx !== null
 
   return (
-    <div
-      ref={containerRef}
-      className="w-full min-h-screen flex flex-col justify-center px-8 sm:px-14 md:px-20 py-20"
-      onMouseMove={onMouseMove}
-    >
-      {/* Floating preview card — follows cursor on desktop */}
-      {anyHovered && (
-        <div
-          className="fixed pointer-events-none z-[70] hidden md:block"
-          style={{ left: mouse.x + 24, top: mouse.y - 56 }}
-        >
-          <div
-            className="bg-white border border-gray-100 rounded-2xl px-5 py-4 shadow-xl"
-            style={{ width: 240, transition: 'opacity 0.15s ease' }}
-          >
-            <p className="text-orange-500 uppercase tracking-widest font-semibold mb-1.5" style={{ fontSize: '0.62rem' }}>
-              {PROJECTS[hoveredIdx!].category} · {PROJECTS[hoveredIdx!].year}
-            </p>
-            <p className="text-gray-600 leading-relaxed mb-3" style={{ fontSize: '0.8125rem' }}>
-              {PROJECTS[hoveredIdx!].description}
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {PROJECTS[hoveredIdx!].tech.map(t => (
-                <span key={t} className="px-2 py-0.5 rounded-full bg-gray-50 border border-gray-200 text-gray-500 font-medium" style={{ fontSize: '0.68rem' }}>
-                  {t}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Project list */}
+    <div className="w-full min-h-screen flex flex-col justify-center px-8 sm:px-14 md:px-20 py-20">
       <div className="w-full">
         {PROJECTS.map((p, i) => {
-          const isHovered  = hoveredIdx === i
-          const isDimmed   = anyHovered && !isHovered
+          const isHovered = hoveredIdx === i
+          const isDimmed  = anyHovered && !isHovered
+
           return (
             <div
               key={p.title}
-              className="group"
               onMouseEnter={() => setHoveredIdx(i)}
               onMouseLeave={() => setHoveredIdx(null)}
             >
-              <div className="flex items-baseline justify-between gap-4 py-4 md:py-5">
-                {/* Title */}
-                <a
-                  href={p.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-bold leading-none tracking-tight flex-1"
-                  style={{
-                    fontSize: 'clamp(2.2rem, 6.5vw, 5.5rem)',
-                    background: 'linear-gradient(135deg, #e8105a 0%, #ff7700 45%, #a78bfa 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    paddingBottom: '0.12em',
-                    opacity: isDimmed ? 0.12 : isHovered ? 1 : 0.4,
-                    transition: 'opacity 0.2s ease',
-                  }}
-                >
-                  {p.title}
-                </a>
+              {/* Title */}
+              <a
+                href={p.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block font-bold leading-none tracking-tight"
+                style={{
+                  fontSize:            'clamp(2.2rem, 6.5vw, 5.5rem)',
+                  background:          'linear-gradient(135deg, #2255ee 0%, #9966ff 50%, #00ccee 100%)',
+                  WebkitBackgroundClip:'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip:      'text',
+                  paddingTop:          '0.15em',
+                  paddingBottom:       '0.12em',
+                  opacity:             isDimmed ? 0.08 : isHovered ? 1 : 0.4,
+                  transition:          'opacity 0.2s ease',
+                }}
+              >
+                {p.title}
+              </a>
 
-                {/* Links — visible on hover, desktop only */}
-                <div
-                  className="hidden md:flex items-center gap-4 flex-shrink-0 pb-1"
-                  style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s ease' }}
-                >
-                  {p.github && (
-                    <a href={p.github} target="_blank" rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-gray-900 text-sm transition-colors">
-                      GitHub ↗
-                    </a>
-                  )}
-                  {p.live && (
-                    <a href={p.live} target="_blank" rel="noopener noreferrer"
-                      className="text-orange-500 hover:text-orange-400 text-sm transition-colors">
-                      Live ↗
-                    </a>
-                  )}
+              {/* Desktop: expands inline on hover */}
+              <div
+                className="hidden md:block overflow-hidden"
+                style={{
+                  maxHeight:  isHovered ? '140px' : '0px',
+                  opacity:    isHovered ? 1 : 0,
+                  transition: 'max-height 0.38s cubic-bezier(0.4,0,0.2,1), opacity 0.22s ease',
+                }}
+              >
+                <div className="flex gap-10 items-start pb-5 pt-1">
+                  <p className="flex-1 text-gray-500 leading-relaxed" style={{ fontSize: '0.9rem' }}>
+                    {p.description}
+                  </p>
+                  <div className="flex-shrink-0 flex flex-col gap-2.5 items-end">
+                    <span className="uppercase tracking-widest font-semibold" style={{ fontSize: '0.6rem', color: '#9966ff' }}>
+                      {p.category} · {p.year}
+                    </span>
+                    <div className="flex flex-wrap justify-end gap-1.5">
+                      {p.tech.map((t, ti) => (
+                        <span
+                          key={t}
+                          className="proj-tag"
+                          style={{
+                            fontSize:       '0.68rem',
+                            padding:        '0.125rem 0.5rem',
+                            animation:      isHovered
+                              ? `tag-enter 0.38s cubic-bezier(0.34,1.56,0.64,1) ${0.08 + ti * 0.07}s both`
+                              : 'none',
+                          }}
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex gap-4">
+                      {p.github && (
+                        <a href={p.github} target="_blank" rel="noopener noreferrer"
+                          className="text-gray-400 hover:text-gray-700 text-xs transition-colors">
+                          GitHub ↗
+                        </a>
+                      )}
+                      {p.live && (
+                        <a href={p.live} target="_blank" rel="noopener noreferrer"
+                          className="text-xs transition-colors" style={{ color: '#2255ee' }}>
+                          Live ↗
+                        </a>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Mobile: show tags + links below title always */}
-              <div className="flex md:hidden flex-wrap items-center gap-x-4 gap-y-2 pb-4">
-                <span className="text-gray-400 uppercase tracking-widest font-medium" style={{ fontSize: '0.65rem' }}>
-                  {p.category} · {p.year}
-                </span>
-                <div className="flex gap-3">
-                  {p.github && (
-                    <a href={p.github} target="_blank" rel="noopener noreferrer"
-                      className="text-gray-400 text-xs">GitHub ↗</a>
-                  )}
-                  {p.live && (
-                    <a href={p.live} target="_blank" rel="noopener noreferrer"
-                      className="text-orange-500 text-xs">Live ↗</a>
-                  )}
+              {/* Mobile: description always visible */}
+              <div className="md:hidden pb-5 pt-1">
+                <p className="text-gray-500 leading-relaxed mb-3" style={{ fontSize: '0.875rem' }}>
+                  {p.description}
+                </p>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <span className="uppercase tracking-widest font-semibold" style={{ fontSize: '0.6rem', color: '#9966ff' }}>
+                    {p.category} · {p.year}
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {p.tech.map(t => (
+                      <span key={t} className="proj-tag" style={{ fontSize: '0.65rem', padding: '0.125rem 0.5rem' }}>
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-3">
+                    {p.github && (
+                      <a href={p.github} target="_blank" rel="noopener noreferrer"
+                        className="text-gray-400 text-xs">GitHub ↗</a>
+                    )}
+                    {p.live && (
+                      <a href={p.live} target="_blank" rel="noopener noreferrer"
+                        className="text-xs" style={{ color: '#2255ee' }}>Live ↗</a>
+                    )}
+                  </div>
                 </div>
               </div>
+
+              <div className="h-px bg-gray-100" />
             </div>
           )
         })}

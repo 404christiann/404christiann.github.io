@@ -69,17 +69,16 @@ const WHITE_PROPS = {
 }
 function WhiteMat() { return <meshPhysicalMaterial {...WHITE_PROPS} /> }
 
-/* Polished black glass */
+/* Dark display panel — no clearcoat, rougher surface, env disabled */
 function GlassMat() {
   return (
     <meshPhysicalMaterial
-      color="#08080f"
-      roughness={0.02}
-      metalness={0.04}
-      clearcoat={1.0}
-      clearcoatRoughness={0.01}
-      reflectivity={1.0}
-      envMapIntensity={0.45}
+      color="#060610"
+      roughness={0.55}
+      metalness={0.0}
+      clearcoat={0}
+      reflectivity={0.05}
+      envMapIntensity={0}
     />
   )
 }
@@ -228,8 +227,8 @@ function Lighting() {
         shadow-camera-left={-5} shadow-camera-right={5}
         shadow-camera-top={5} shadow-camera-bottom={-5}
       />
-      {/* Fill — right, cool */}
-      <directionalLight position={[4, 2, 3]}   intensity={0.8}  color="#ddeeff" />
+      {/* Fill — right, cool — kept low so the glass panel stays dark */}
+      <directionalLight position={[4, 2, 3]}   intensity={0.18} color="#ddeeff" />
       {/* Top rim */}
       <directionalLight position={[0, 6, -4]}  intensity={0.7}  color="#ffffff" />
       {/* Under soft fill */}
@@ -326,14 +325,13 @@ export default function ContactScene() {
           style={{
             padding:        '14px 48px',
             borderRadius:   50,
-            /* purple-left → reddish-orange-right as specified */
-            background:     'linear-gradient(90deg, #7c3aed 0%, #c8263a 55%, #e84421 100%)',
+            background:     'linear-gradient(135deg, #cc1100 0%, #ff5500 55%, #ffaa33 100%)',
             color:          '#fff',
             fontWeight:     700,
             fontSize:       '1.05rem',
             textDecoration: 'none',
             letterSpacing:  '0.02em',
-            boxShadow:      '0 8px 28px rgba(124,58,237,0.35), 0 2px 8px rgba(0,0,0,0.12)',
+            boxShadow:      '0 8px 28px rgba(204,17,0,0.35), 0 2px 8px rgba(0,0,0,0.12)',
             cursor:         'pointer',
             display:        'inline-block',
             transition:     'transform 0.16s ease, box-shadow 0.16s ease',
@@ -341,12 +339,12 @@ export default function ContactScene() {
           onMouseOver={e => {
             const el = e.currentTarget as HTMLElement
             el.style.transform = 'scale(1.05)'
-            el.style.boxShadow = '0 14px 36px rgba(124,58,237,0.50), 0 4px 12px rgba(0,0,0,0.16)'
+            el.style.boxShadow = '0 14px 36px rgba(204,17,0,0.50), 0 4px 12px rgba(0,0,0,0.16)'
           }}
           onMouseOut={e => {
             const el = e.currentTarget as HTMLElement
             el.style.transform = 'scale(1)'
-            el.style.boxShadow = '0 8px 28px rgba(124,58,237,0.35), 0 2px 8px rgba(0,0,0,0.12)'
+            el.style.boxShadow = '0 8px 28px rgba(204,17,0,0.35), 0 2px 8px rgba(0,0,0,0.12)'
           }}
         >
           Get in touch
