@@ -170,6 +170,11 @@ function ss(x: number): number {
   return c * c * (3 - 2 * c)
 }
 
+function easeInOutCubic(x: number): number {
+  const c = Math.max(0, Math.min(1, x))
+  return c < 0.5 ? 4 * c * c * c : 1 - Math.pow(-2 * c + 2, 3) / 2
+}
+
 // ─── Label position type ─────────────────────────────────────────────────────
 interface LabelStyle {
   left: string
@@ -186,6 +191,7 @@ export default function BlobNav() {
 
   const [active,   setActive]   = useState<string | null>(null)
   const [visible,  setVisible]  = useState(false)
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [labelPos, setLabelPos] = useState<LabelStyle[]>([])
 
   const txRef = useRef<{
@@ -199,15 +205,43 @@ export default function BlobNav() {
 
   const clockRef    = useRef(0)
   const revealedRef = useRef(false)
+  const hoveredIdRef = useRef<string | null>(null)
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    hoveredIdRef.current = hoveredId
+  }, [hoveredId])
+
+  const openBlobByIndex = useCallback((bi: number) => {
+    if (txRef.current.phase !== 'idle') return
+    const def = BLOB_DEFS[bi]
+    if (!def) return
+
+    txRef.current = {
+      phase:         'expanding',
+      activeIdx:     bi,
+      activeId:      def.id,
+      expandStart:   clockRef.current,
+      collapseStart: 0,
+      flashColor:    def.flashColor,
+    }
+    revealedRef.current = false
+    setHoveredId(null)
+    setActive(def.id)
+    setVisible(false)
+  }, [])
 
   const closeSection = () => {
+    if (txRef.current.phase === 'collapsing' || txRef.current.phase === 'idle') return
     setVisible(false)
     revealedRef.current = false
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current)
     // Wait for the content overlay to finish fading (0.45s) before the blob
     // starts retreating — prevents the two animations from racing each other
-    setTimeout(() => {
+    closeTimeoutRef.current = setTimeout(() => {
       txRef.current.phase         = 'collapsing'
       txRef.current.collapseStart = clockRef.current
+      closeTimeoutRef.current = null
     }, 420)
   }
 
@@ -329,33 +363,48 @@ export default function BlobNav() {
       mouse2d.y = -((clientY - r.top)  / r.height) * 2 + 1
     }
 
-    const tryOpen = () => {
-      if (txRef.current.phase !== 'idle') return
+    const updateHover = (idx: number | null) => {
+      const nextHoveredId = idx === null ? null : blobs[idx]?.def.id ?? null
+      mount.style.cursor = nextHoveredId ? 'pointer' : 'default'
+      setHoveredId(prev => (prev === nextHoveredId ? prev : nextHoveredId))
+    }
+
+    const getIntersectedBlobIndex = () => {
       raycaster.setFromCamera(mouse2d, camera)
       for (let bi = 0; bi < blobs.length; bi++) {
         const hits = raycaster.intersectObject(blobs[bi].mesh)
         if (hits.length > 0) {
-          const def = blobs[bi].def
-          txRef.current = {
-            phase:         'expanding',
-            activeIdx:     bi,
-            activeId:      def.id,
-            expandStart:   clockRef.current,
-            collapseStart: 0,
-            flashColor:    def.flashColor,
-          }
-          revealedRef.current = false
-          setActive(def.id)
-          setVisible(false)
-          break
+          return bi
         }
       }
+      return null
+    }
+
+    const tryOpen = () => {
+      if (txRef.current.phase !== 'idle') return
+      const hitIdx = getIntersectedBlobIndex()
+      if (hitIdx !== null) openBlobByIndex(hitIdx)
+    }
+
+    const onMouseMove = (e: MouseEvent) => {
+      pointerToNDC(e.clientX, e.clientY)
+      if (txRef.current.phase !== 'idle') {
+        updateHover(null)
+        return
+      }
+      updateHover(getIntersectedBlobIndex())
     }
 
     const onClick = (e: MouseEvent) => {
       pointerToNDC(e.clientX, e.clientY)
       tryOpen()
     }
+
+    const onMouseLeave = () => {
+      mount.style.cursor = 'default'
+      updateHover(null)
+    }
+
     const onTouchStart = (e: TouchEvent) => {
       if (e.touches.length > 0) {
         pointerToNDC(e.touches[0].clientX, e.touches[0].clientY)
@@ -363,6 +412,8 @@ export default function BlobNav() {
       }
     }
 
+    mount.addEventListener('mousemove',   onMouseMove)
+    mount.addEventListener('mouseleave',  onMouseLeave)
     mount.addEventListener('click',      onClick)
     mount.addEventListener('touchstart', onTouchStart, { passive: true })
 
@@ -384,9 +435,9 @@ export default function BlobNav() {
     const clock = new THREE.Clock()
     let animId: number
 
-    const EXP_DUR  = 1.40   // seconds to fully enter
+    const EXP_DUR  = 1.28   // seconds to fully enter
     const COL_DUR  = 1.60   // seconds to exit — long enough to feel deliberate
-    const CAM_NEAR = 1.50   // camera z at peak immersion (right against blob)
+    const CAM_NEAR = 1.20   // camera z at peak immersion (right against blob)
 
     const orbPos = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]
 
@@ -401,7 +452,7 @@ export default function BlobNav() {
       // ── Transition progress (ep: 0 → 1) ───────────────────────────────
       let ep = 0
       if (tx.phase === 'expanding') {
-        ep = ss(Math.min(1, (t - tx.expandStart) / EXP_DUR))
+        ep = easeInOutCubic(Math.min(1, (t - tx.expandStart) / EXP_DUR))
         if (ep >= 1 && !revealedRef.current) {
           tx.phase = 'open'
           revealedRef.current = true
@@ -411,7 +462,7 @@ export default function BlobNav() {
         ep = 1
       } else if (tx.phase === 'collapsing') {
         const raw = Math.min(1, (t - tx.collapseStart) / COL_DUR)
-        ep = 1 - ss(raw)
+        ep = 1 - easeInOutCubic(raw)
         if (raw >= 1) {
           ep = 0; tx.phase = 'idle'; tx.activeIdx = -1
           setActive(null)
@@ -434,11 +485,11 @@ export default function BlobNav() {
         // Fades in during ep 0.65 → 1.0; also fades quickly at collapse start
         let flashOp = 0
         if (tx.phase === 'expanding' || tx.phase === 'open') {
-          flashOp = ep > 0.65 ? ss((ep - 0.65) / 0.35) : 0
+          flashOp = ep > 0.52 ? easeInOutCubic((ep - 0.52) / 0.40) : 0
         } else if (tx.phase === 'collapsing') {
           const raw = Math.min(1, (t - tx.collapseStart) / COL_DUR)
-          // Fade out over the first 50% of collapse — matches the slower camera pull-back
-          flashOp = Math.max(0, 1 - raw / 0.50)
+          // Fade out over the first 60% of collapse — smoother handoff back to the stage
+          flashOp = Math.max(0, 1 - easeInOutCubic(Math.min(1, raw / 0.60)))
         }
         flashRef.current.style.opacity    = String(flashOp)
         flashRef.current.style.background = tx.flashColor
@@ -466,16 +517,17 @@ export default function BlobNav() {
           )
           // Modest scale — camera zoom provides the depth, not brute scaling
           b.mesh.scale.setScalar(1 + ep * 0.50)
-          // Rotation accelerates as we enter — surface feels alive
-          b.mesh.rotation.y = t * b.def.rotY * (1 + ep * 5.0)
-          b.mesh.rotation.x = t * b.def.rotX * (1 + ep * 2.5)
+          // Add a fixed transition spin so each open feels consistent over time.
+          b.mesh.rotation.y = t * b.def.rotY + ep * 1.55
+          b.mesh.rotation.x = t * b.def.rotX + ep * 0.42
 
         } else if (!isActive && isTrans) {
-          // Siblings shrink away quickly
-          b.mesh.scale.setScalar(Math.max(0, 1 - ep * 3.0))
+          // Siblings ease away rather than abruptly dropping out
+          const siblingEase = easeInOutCubic(ep)
+          b.mesh.scale.setScalar(Math.max(0, 1 - siblingEase * 1.35))
           b.mesh.position.set(b.basePos.x, b.basePos.y + bobY, b.basePos.z)
-          b.mesh.rotation.y = t * b.def.rotY
-          b.mesh.rotation.x = t * b.def.rotX
+          b.mesh.rotation.y = t * b.def.rotY * (1 - siblingEase * 0.18)
+          b.mesh.rotation.x = t * b.def.rotX * (1 - siblingEase * 0.18)
 
         } else {
           b.mesh.scale.setScalar(1)
@@ -529,13 +581,17 @@ export default function BlobNav() {
     // ── Cleanup ───────────────────────────────────────────────────────────
     return () => {
       cancelAnimationFrame(animId)
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current)
+      mount.style.cursor = 'default'
+      mount.removeEventListener('mousemove',   onMouseMove)
+      mount.removeEventListener('mouseleave',  onMouseLeave)
       mount.removeEventListener('click',      onClick)
       mount.removeEventListener('touchstart', onTouchStart)
       window.removeEventListener('resize',    onResize)
       if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement)
       renderer.dispose()
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [openBlobByIndex])
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -550,9 +606,15 @@ export default function BlobNav() {
         Fade out when a blob is clicked.
       */}
       {BLOB_DEFS.map((b, i) => (
-        <div
+        <button
           key={b.id}
-          className="absolute pointer-events-none select-none font-semibold uppercase tracking-widest"
+          type="button"
+          onMouseEnter={() => setHoveredId(b.id)}
+          onMouseLeave={() => setHoveredId(prev => (prev === b.id ? null : prev))}
+          onFocus={() => setHoveredId(b.id)}
+          onBlur={() => setHoveredId(prev => (prev === b.id ? null : prev))}
+          onClick={() => openBlobByIndex(i)}
+          className="absolute select-none font-semibold uppercase tracking-widest cursor-pointer bg-transparent border-none p-0"
           style={{
             fontSize:   'clamp(0.55rem, 1.4vw, 0.72rem)',
             whiteSpace: 'nowrap',
@@ -561,9 +623,10 @@ export default function BlobNav() {
             transition: 'opacity 0.22s ease',
             ...(labelPos[i] ?? {}),
           }}
+          aria-label={`Open ${b.label}`}
         >
           {b.label}
-        </div>
+        </button>
       ))}
 
       {/*
