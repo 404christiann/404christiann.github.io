@@ -1,7 +1,7 @@
 'use client'
 import { Suspense, useEffect, useRef, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { Float, Environment, RoundedBox } from '@react-three/drei'
+import { Float, RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
 
 /* ─── Pixel-art eye patterns ────────────────────────────────────── */
@@ -216,23 +216,67 @@ function Robot({ refs }: { refs: SharedRefs }) {
 }
 
 /* ─── Lighting — high-key, soft, no hard shadows ─────────────────── */
+/* ─── Stars ──────────────────────────────────────────────────────── */
+function Stars() {
+  const ref = useRef<THREE.Points>(null)
+
+  const [smallGeo, bigGeo] = useMemo(() => {
+    const make = (count: number, minR: number, maxR: number) => {
+      const arr = new Float32Array(count * 3)
+      for (let i = 0; i < count; i++) {
+        const theta = Math.random() * Math.PI * 2
+        const phi   = Math.acos(2 * Math.random() - 1)
+        const r     = minR + Math.random() * (maxR - minR)
+        arr[i * 3]     = r * Math.sin(phi) * Math.cos(theta)
+        arr[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta)
+        arr[i * 3 + 2] = r * Math.cos(phi)
+      }
+      const g = new THREE.BufferGeometry()
+      g.setAttribute('position', new THREE.BufferAttribute(arr, 3))
+      return g
+    }
+    return [make(2800, 22, 70), make(220, 18, 45)]
+  }, [])
+
+  useFrame((_, delta) => {
+    if (ref.current) {
+      ref.current.rotation.y += delta * 0.014
+      ref.current.rotation.x += delta * 0.004
+    }
+  })
+
+  return (
+    <group ref={ref}>
+      {/* Many small distant stars */}
+      <points geometry={smallGeo}>
+        <pointsMaterial size={0.09} color="#b8d4ff" sizeAttenuation transparent opacity={0.80} />
+      </points>
+      {/* Fewer bright foreground stars */}
+      <points geometry={bigGeo}>
+        <pointsMaterial size={0.22} color="#ffffff" sizeAttenuation transparent opacity={0.90} />
+      </points>
+    </group>
+  )
+}
+
+/* ─── Lighting ───────────────────────────────────────────────────── */
 function Lighting() {
   return (
     <>
-      <ambientLight intensity={0.50} color="#ffffff" />
-      {/* Key — upper-left, soft warm */}
-      <directionalLight position={[-3.5, 5, 5]} intensity={1.8} color="#fff8f4"
+      {/* Deep space: very dim blue-tinted ambient */}
+      <ambientLight intensity={0.12} color="#1a2a4a" />
+      {/* Sun — strong key from upper-left */}
+      <directionalLight
+        position={[-3.5, 5, 5]} intensity={2.0} color="#fff8f0"
         castShadow shadow-mapSize={[2048, 2048]} shadow-bias={-0.001}
         shadow-camera-near={0.5} shadow-camera-far={20}
         shadow-camera-left={-5} shadow-camera-right={5}
-        shadow-camera-top={5} shadow-camera-bottom={-5}
+        shadow-camera-top={5}   shadow-camera-bottom={-5}
       />
-      {/* Fill — right, cool — kept low so the glass panel stays dark */}
-      <directionalLight position={[4, 2, 3]}   intensity={0.18} color="#ddeeff" />
-      {/* Top rim */}
-      <directionalLight position={[0, 6, -4]}  intensity={0.7}  color="#ffffff" />
-      {/* Under soft fill */}
-      <pointLight       position={[0, -4, 4]}  intensity={0.4}  color="#ffffff" />
+      {/* Cool blue rim — space reflected light */}
+      <directionalLight position={[3.5, -1, 2]} intensity={0.20} color="#4488ff" />
+      {/* Soft under fill so belly isn't pitch black */}
+      <pointLight position={[0, -5, 4]} intensity={0.30} color="#223366" />
     </>
   )
 }
@@ -241,11 +285,13 @@ function Lighting() {
 function Scene({ refs }: { refs: SharedRefs }) {
   return (
     <>
-      {/* Soft lavender-grey infinite void */}
-      <color attach="background" args={['#eaeaf4']} />
-      <fog attach="fog" args={['#eaeaf4', 12, 28]} />
+      {/* Deep space void */}
+      <color attach="background" args={['#03030d']} />
+      <fog attach="fog" args={['#03030d', 18, 50]} />
+
+      <Stars />
       <Lighting />
-      <Environment preset="studio" />
+
       <Float speed={1.3} rotationIntensity={0.035} floatIntensity={0.28}>
         <Robot refs={refs} />
       </Float>
@@ -290,7 +336,7 @@ export default function ContactScene() {
       width: '100%', height: '100%',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center',
-      background: '#eaeaf4',
+      background: '#03030d',
       overflow: 'hidden',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     }}>

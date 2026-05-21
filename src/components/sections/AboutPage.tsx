@@ -113,6 +113,9 @@ function ExperienceContent() {
   )
 }
 
+// One blob color per skill category — matches c1/c2/c3/c4 of the About blob
+const SKILL_COLORS = ['#e8105a', '#ff7700', '#8810f0', '#ff88ee']
+
 function SkillsContent() {
   return (
     <div className="w-full max-w-lg">
@@ -122,10 +125,10 @@ function SkillsContent() {
           className="flex gap-6 items-baseline"
           style={{ paddingTop: idx === 0 ? 0 : '1.25rem', paddingBottom: '1.25rem', borderBottom: idx < SKILL_ROWS.length - 1 ? '1px solid #f3f4f6' : 'none' }}
         >
-          {/* Category label — fixed width, small caps */}
+          {/* Category label — color coded to the About blob palette */}
           <span
-            className="flex-shrink-0 text-gray-300 font-semibold uppercase tracking-widest"
-            style={{ fontSize: '0.6rem', width: '5.5rem', paddingTop: '0.2rem' }}
+            className="flex-shrink-0 font-semibold uppercase tracking-widest"
+            style={{ fontSize: '0.6rem', width: '5.5rem', paddingTop: '0.2rem', color: SKILL_COLORS[idx] }}
           >
             {row.category}
           </span>

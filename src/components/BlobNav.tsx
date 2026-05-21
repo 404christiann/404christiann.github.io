@@ -830,6 +830,24 @@ const PROJECTS = [
     github:      'https://github.com/404christiann/resumeTailorAssistant',
     live:        undefined,
   },
+  {
+    title:       'Rose City FC',
+    category:    'Web / Design',
+    year:        '2026',
+    description: 'Concept rebuild of the Rose City Futbol Club website — a semi-pro UPSL team based in Pasadena. Dark, editorial aesthetic with a cinematic homepage, roster & staff pages, fixture schedule, and a custom responsive shop experience.',
+    tech:        ['Next.js', 'TypeScript', 'Tailwind CSS', 'GSAP', 'Supabase'],
+    github:      'https://github.com/404christiann/roseCityWebsite',
+    live:        'https://rose-city-website.vercel.app',
+  },
+  {
+    title:       'Claude Course for Dummies',
+    category:    'Web / Education',
+    year:        '2026',
+    description: 'An interactive course site for learning how to build with Claude AI. Built with MDX-powered content and a clean reading-focused layout, making it easy to follow along and apply concepts hands-on.',
+    tech:        ['Next.js', 'TypeScript', 'MDX', 'shadcn/ui', 'Tailwind CSS'],
+    github:      'https://github.com/404christiann/claude_course_for_dummies',
+    live:        'https://claude-course-for-dummies.vercel.app',
+  },
 ]
 
 function ProjectsSection() {
