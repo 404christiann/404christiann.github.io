@@ -5,8 +5,12 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Christian Alcala | Portfolio",
-  description: "Personal portfolio of Christian Alcala, full-stack developer.",
+  title: "builder 🔧",
+  description: "builder 🔧",
+  icons: {
+    icon: { url: "/brand/white-dot-favicon.png", sizes: "64x64", type: "image/png" },
+    apple: { url: "/brand/white-dot-apple-touch.png", sizes: "180x180", type: "image/png" },
+  },
 };
 
 export default function RootLayout({
