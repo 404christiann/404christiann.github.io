@@ -1,28 +1,26 @@
-# Rehearsal: homepage project demos
+# Rehearsal: Onzio homepage demo
 
-Gold: `form-error` (a form in a window, one check through its button states, plays once) and `static-card` (a card straddling a sidebar) for Onzio; `form-error` framing for the two browser demos. Kept the well, the crop and the play-once pacing. Replaced the look, words and icons with each product's own.
+Gold: `hero-demo` (a second window coming forward at the payoff) and `form-error` (button states in one slot, plays once). Kept the well, the crop and the play-once pacing. The admin's nav, dashboard copy and match panel come from the real Onzio admin; the public site uses Diverse City FC's own look.
 
-Beats
-- Onzio: click Opponent, type over TBA, Publish, the site card changes. About 8s.
-- Diverse City FC: the homepage, Schedule menu, Fixtures. About 7s.
-- Ground Work Therapy: the homepage, FAQ, open the cost question. About 7s.
+Beats: Dashboard, Upcoming fixtures, Schedule, open the match, type over TBA, Save changes, the club site comes forward, its Next match changes. About 11s, then it holds.
 
-Captured: 592 and 342 wide on the demo routes, reduced-motion stills at 592, the homepage at 1100 and 375 wide in the dev server and at 1100 in a production build.
+Captured: 592 and 342 wide on the demo route, the homepage at desktop and phone widths, and a production build.
 
 Film
-- The gate reports 6 `kit override: .ss-phone...` lines on every demo. These are false alarms: the checker can't tell the kit's own `phone.css` from demo CSS once Next bundles them, and no demo CSS mentions `.ss-phone`. Every other never-intentional line is at 0.
+- The gate reports 6 `kit override: .ss-phone...` lines. These are false alarms: the checker can't tell the kit's own `phone.css` from demo CSS once Next bundles them, and no demo CSS mentions `.ss-phone`.
 - Coverage reads `inconclusive` because of sampling gaps on a heavily loaded machine, so motion during those gaps wasn't judged.
-- Remaining candidates that stand: `jump` on the Opponent field (typing), `lopsided` by 3px on Publish (States holds the widest label), `uneven` on the FAQ mark (its bounding box while rotated).
+- Remaining candidates that stand: `jump` and `settle snap` on typed text, `half-pixel glyph` on icons in pages that rise 8px, and `hard edge` on the sidebar's opening group.
+
+Placeholder: `public/demos/onzio-opening-*.jpg` are the demo's opening frame, shown behind the iframe while its JavaScript loads. Re-capture them if the Dashboard screen changes.
 
 Kit changes: `parts/Icon.tsx` draws icons.download glyphs instead of lucide, and `stage.tsx` waits for 60% of the stage to be in view.
 
 Assumptions
-- The fixture and the FAQ price are copied from the live sites as of 2026-10-31. They are hard-coded and won't follow later edits.
-- Onzio's form fields are a simplified illustration of the admin, not a copy of its real schedule screen.
+- The fixture is copied from diversecityfc.com as of 2026-10-31 and is hard-coded.
+- The schedule's other rows are placeholder bars. The panel simplifies the real match form.
 
 Not checked
 - The fresh-eye review in `references/review.md`.
 - Safari, and real touch devices.
-- Production at phone width (dev server only).
 - `--states` sheets.
 - Playback at speed by a person: frames were read from contact sheets.

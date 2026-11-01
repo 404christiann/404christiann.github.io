@@ -1,4 +1,4 @@
-export const DEMO_NAMES = ['onzio', 'diverse-city', 'ground-work'] as const
+export const DEMO_NAMES = ['onzio'] as const
 
 export type DemoName = (typeof DEMO_NAMES)[number]
 

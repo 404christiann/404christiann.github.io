@@ -2,13 +2,12 @@
 
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { Montserrat, Newsreader } from 'next/font/google'
+import { Montserrat } from 'next/font/google'
 import DemoFrame from './DemoFrame'
 import { DEMO_NAMES, isDemoName } from './names'
 import './demo-page.css'
 
 const montserrat = Montserrat({ subsets: ['latin'], weight: '900', style: 'italic', variable: '--demo-montserrat' })
-const newsreader = Newsreader({ subsets: ['latin'], weight: '400', variable: '--demo-newsreader' })
 
 export const dynamicParams = false
 
@@ -24,7 +23,7 @@ export default async function DemoPage({ params }: { params: Promise<{ name: str
   const { name } = await params
   if (!isDemoName(name)) notFound()
   return (
-    <div className={`${montserrat.variable} ${newsreader.variable}`}>
+    <div className={montserrat.variable}>
       <DemoFrame name={name} />
     </div>
   )
