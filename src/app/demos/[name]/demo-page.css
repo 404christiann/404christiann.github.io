@@ -1,0 +1,6 @@
+/* The iframe shows only the stage, on whatever the homepage has behind it. */
+html,
+body {
+  margin: 0;
+  background: transparent;
+}

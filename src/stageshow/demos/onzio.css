@@ -1,0 +1,192 @@
+/* The well matches the homepage's --card and card radius. */
+.oz {
+  & .ss-stage {
+    --ss-accent: #12a140;
+    --ss-font: var(--font-geist-sans), system-ui, sans-serif;
+    overflow: hidden;
+    border-radius: 18px;
+    background: #f5f5f7;
+  }
+
+  /* Pinned top-left, off the right and bottom; the card straddles its sidebar */
+  .oz-window {
+    position: absolute;
+    top: 24px;
+    left: 118px;
+    width: 600px;
+    height: 420px;
+    box-shadow: var(--ss-shadow-hero);
+  }
+  & [data-layout="compact"] .oz-window {
+    top: 16px;
+    left: 16px;
+    width: 400px;
+  }
+
+  .oz-side {
+    display: grid;
+    align-content: start;
+    gap: 2px;
+    padding: 2px 8px 0;
+  }
+  .oz-club {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 4px 4px;
+  }
+  .oz-club img { flex: none; display: block; width: 22px; height: 22px; }
+  .oz-club__name {
+    color: var(--ss-text-strong);
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .oz-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 6px;
+    color: var(--ss-text);
+  }
+  .oz-nav__label { font-size: 11.5px; white-space: nowrap; }
+  .oz-nav[data-on] {
+    background: #ddf5e5;
+    color: #0b4d2c;
+    font-weight: 600;
+  }
+
+  /* Laid out to the visible crop, so every control stays whole past the bleed */
+  .oz-main {
+    width: 324px;
+    height: 100%;
+    padding: 12px 24px 0 16px;
+    background: var(--ss-surface);
+  }
+  & [data-layout="compact"] .oz-main { width: 326px; padding-right: 16px; }
+
+  .oz-form { display: grid; gap: 10px; }
+  .oz-pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .oz-publish {
+    justify-self: end;
+    display: inline-grid;
+    place-items: center;
+    height: 32px;
+    margin-top: 2px;
+    padding: 0 14px;
+    border-radius: 8px;
+    background: #12a140;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background-color 0.25s ease;
+  }
+  .oz-publish[data-hover] { background: #0d8c36; }
+  .oz-publish[data-state="done"] { background: #0b4d2c; }
+  .oz-publish__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .oz-filler {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 34px;
+    border-top: 1px solid var(--ss-line);
+  }
+  .oz-filler:first-of-type { margin-top: 12px; }
+  & [data-layout="compact"] .oz-filler:not(:first-of-type) { display: none; }
+
+  /* The club site, in its own look */
+  .oz-site {
+    position: absolute;
+    left: 24px;
+    bottom: 24px;
+    width: 196px;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #f9fafd;
+    box-shadow: var(--ss-shadow-satellite);
+    color: #1e3653;
+  }
+  & [data-layout="compact"] .oz-site {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    width: auto;
+  }
+  .oz-site__bar {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e6e9f0;
+    background: #fff;
+    color: #65656a;
+    font-size: 10.5px;
+    line-height: 1.3;
+  }
+  .oz-site__body { padding: 12px; }
+  .oz-site__title {
+    font-family: var(--demo-montserrat), system-ui, sans-serif;
+    font-size: 15px;
+    font-style: italic;
+    font-weight: 900;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+  .oz-versus {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+  }
+  .oz-versus img { display: block; flex: none; }
+  .oz-vs {
+    color: #e5352b;
+    font-family: var(--demo-montserrat), system-ui, sans-serif;
+    font-size: 15px;
+    font-style: italic;
+    font-weight: 900;
+  }
+  .oz-disc {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #e8ebf1;
+    color: #64748b;
+    font-size: 17px;
+    font-weight: 800;
+  }
+  .oz-disc__tba { font-size: 12px; letter-spacing: 0.02em; }
+  .oz-fixture { display: grid; gap: 2px; margin-top: 8px; }
+  .oz-fixture__name {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.3;
+    white-space: nowrap;
+  }
+  .oz-fixture__name--tba { color: #64748b; font-weight: 500; }
+  .oz-fixture__meta { color: #64748b; font-size: 11px; line-height: 1.3; }
+
+  /* On a phone the card lies flat on one line, so Publish stays whole above it */
+  & [data-layout="compact"] .oz-site__body {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 16px;
+  }
+  & [data-layout="compact"] .oz-site__title { grid-column: 1 / -1; }
+  & [data-layout="compact"] .oz-versus { gap: 8px; justify-content: start; margin-top: 8px; }
+  & [data-layout="compact"] .oz-fixture { margin-top: 8px; }
+}
