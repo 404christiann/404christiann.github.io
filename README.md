@@ -1,11 +1,32 @@
 # 404christiann.github.io
 
-Christian Alcala’s personal website, served by Next.js on Vercel at https://404christian.com/.
+Christian Alcala's personal website, hosted on Vercel at https://404christian.com/.
 
-## Founderfolio homepage
+## How the site works
 
-The approved Founderfolio design is the public homepage. `next.config.ts` rewrites `/` to the standalone page at `public/founderfolio-apple.html`, serving it directly without changing the browser URL. The same page remains accessible at `/founderfolio-apple.html`, with the root URL declared as canonical.
+The homepage is one hand-written HTML file, `public/founderfolio-apple.html`. `next.config.ts` rewrites `/` to that file, so the browser URL stays at the root. Edit the homepage's content and styles there. Its images and their sources are in `public/founderfolio-assets/`.
 
-The page contains selected projects, experience, About copy, a dated GitHub activity snapshot, and contact links. Preview controls are removed for production. Edit content and styling in `public/founderfolio-apple.html`; brand assets and their documented sources live in `public/founderfolio-assets/`.
+Next.js only serves the rewrite and the demo pages:
 
-The earlier WebGL homepage components remain in the repository for reference and are bypassed by the root rewrite. Local design comparison files are excluded from the published site.
+- `src/app/demos/[name]/` renders each demo as its own page, which the homepage embeds in an iframe. These pages are `noindex`.
+- `src/stageshow/demos/` holds the demos.
+- `src/stageshow/kit/` is a copy of the Stageshow kit with two local changes, listed in `src/stageshow/demos/REHEARSAL.md`. ESLint ignores this folder.
+- `src/components/SiteAnalytics.tsx` adds Vercel Analytics and skips `/demos/*`, so iframes don't count as visits.
+
+The earlier WebGL homepage is in git history. To see it, check out commit `06878e0`.
+
+## Run it
+
+Requires Node 20 or newer.
+
+```bash
+npm install
+npm run dev
+```
+
+Before opening a pull request, run:
+
+```bash
+npm run lint
+npm run build
+```
