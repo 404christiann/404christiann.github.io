@@ -10,7 +10,6 @@ const nextConfig: NextConfig = {
       ],
     };
   },
-  transpilePackages: ['three', '@react-three/fiber', '@react-three/drei', '@react-three/postprocessing', 'troika-three-text'],
   turbopack: {
     root: path.resolve(__dirname),
   },
