@@ -15,7 +15,7 @@ Employer logos added for the local portfolio content preview on October 10, 2026
 - `employer-zuora.svg`: official Zuora organization logo, https://www.zuora.com/wp-content/uploads/2025/06/be-zuora-logo-after.svg, referenced in https://www.zuora.com/ organization metadata.
 - `employer-visa.png`: official Visa header logo, https://www.visa.com/vcom-assets/content/dam/visa/header/Vector.png, referenced by its current homepage.
 
-Project links checked against public site responses during the content pass: Onzio links to its product site, Diverse City FC to its club site, and Ground Work Therapy to the current Vercel site. This preview does not migrate the Next.js homepage.
+Project links checked against public site responses during the content pass: Onzio links to its product site, Diverse City FC to its club site, and Tiffany Venegas, LCSW to tiffanyvenegaslcsw.com. This preview does not migrate the Next.js homepage.
 
 ## Footer social logos
 
